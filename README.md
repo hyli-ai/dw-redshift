@@ -12,17 +12,24 @@ In this project, a relational database is created by using Postgres to analyze t
 * [Project Instructions](#project-instructions)
 
 ## Introduction
-A startup called Sparkify wants to analyze the data they've been collecting on songs and user activity on their new music streaming app. The analytics team is particularly interested in understanding what songs users are listening to. Currently, they don't have an easy way to query their data, which resides in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
 
-The goal of this project is to create a Postgres database with tables designed to optimize queries on song play analysis and as a data engineer, I will create a database schema and ETL pipeline for this analysis. I will also be able to test the database and ETL pipeline by running queries given to you by the analytics team from Sparkify and compare the results with their expected results.
+### Scenario
+A music streaming startup, Sparkify, has grown their user base and song database and want to move their processes and data onto the cloud. Their data resides in S3, in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
+
+### Goal
+The goal of this project, as a data engineer, is to build an ETL pipeline that extracts the data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for the analytics team to continue finding insights in what songs their users are listening to. It is also expected to test the database and ETL pipeline by running queries given by the analytics team from Sparkify and compare the results with their expected results.
 
 ## Project Description
-* Use the data modeling technique with Postgres to build an ETL pipeline using Python.
+* Build an ETL pipeline for a database hosted on Redshift based on the knowledge of data warehouses and AWS.
 
-* Define fact and dimension tables for a star schema for a particular analytic focus, and write an ETL pipeline that transfers data from files in two local directories into these tables in Postgres using Python and SQL.
+* Load data from S3 to staging tables on Redshift and execute SQL statements that create the analytics tables from these staging tables.
 
 ## Dataset
-Two sets of data are presented in the data folder: the **Song Dataset** and the **Log Dataset**:
+Two sets of data are presented: the **Song Dataset** and the **Log Dataset**. These datasets reside in S3, and here are the S3 links for each:
+
+* Song data: `s3://udacity-dend/song_data`
+* Log data: `s3://udacity-dend/log_data`
+* Log data json path: `s3://udacity-dend/log_json_path.json`
 
 ### Song Dataset
 The first dataset is a subset of real data from the [Million Song Dataset](https://labrosa.ee.columbia.edu/millionsong/). Each file is in JSON format and contains metadata about a song and the artist of that song. The files are partitioned by the first three letters of each song's track ID. For example, here are filepaths to two files in this dataset.
@@ -84,24 +91,37 @@ This includes the following tables:
 
 
 ## Files in this Project
-In addition to the data files, the project workspace includes six files:
+This project workspace includes four files:
 
-1. `test.ipynb` displays the first few rows of each table. This allows us to check the validity of the database.
+1. `create_tables.py` is where the fact and dimension tables are created for the star schema in Redshift.
 
-2. `create_tables.py` drops and creates the tables. We can run this file to reset the tables before each time you run the ETL scripts.
+2. `etl.py` is will load data from S3 into staging tables on Redshift and then process that data into the analytics tables on Redshift.
 
-3. `etl.ipynb` reads and processes a single file from song_data and log_data and loads the data into the tables. This notebook contains detailed instructions on the ETL process for each of the tables.
+5. `sql_queries.py` is where the SQL statements are defined, which will be imported into the two other files above.
 
-4. `etl.py` reads and processes files from song_data and log_data and loads them into the tables.
-
-5. `sql_queries.py` contains all the sql queries, and is imported into the last three files above.
-
-6. `README.md` provides discussion on this project.
+6. `README.md` provide discussion on your process and decisions for this ETL pipeline.
 
 ## Project Instructions
-1. Run `create_tables.py` to reset your tables.
 
-2. Run `etl.py` where the ETL processes for each table is developed.
+### Create Table Schema
 
-3. (Optional) Run `test.ipynb` to confirm your records were successfully inserted into each table.
+1. Design schemas for the fact and dimension tables (described as above).
+2. Write a SQL `CREATE` statement for each of these tables in `sql_queries.py`.
+3. Complete the logic in `create_tables.py` to connect to the database and create these tables.
+4. Write SQL `DROP` statements to drop tables in the beginning of `create_tables.py` if the tables already exist. This way, one can run `create_tables.py` whenever he/she wants to reset the database and test the ETL pipeline.
+5. Launch a redshift cluster and create an IAM role that has read access to S3.
+6. Add redshift database and IAM role info to `dwh.cfg`.
+7. Test by running `create_tables.py` and checking the table schemas in the redshift database. Use Query Editor in the AWS Redshift console for this.
 
+### Build ETL Pipeline
+
+1. Implement the logic in `etl.py` to load data from S3 to staging tables on Redshift.
+2. Implement the logic in `etl.py` to load data from staging tables to analytics tables on Redshift.
+3. Test by running `etl.py` after running `create_tables.py` and running the analytic queries on your Redshift database to compare the results with the expected results.
+4. Delete the redshift cluster when finished.
+
+### Notes
+
+1. Redshift cluster has been created and deleted.
+2. File dwh.cfg does not contain HOST and IAM Role for security reasons.
+3. Please let me know if you would like me to provide them.
