@@ -1,6 +1,6 @@
-# Data Modeling with Postgres
+# Data Warehouse (Amazon Redshift)
 >
-In this project, a relational database is created by using Postgres to analyze two datasets, which contain the songs and the user activities in JSON format. A star schema optimized for queries on song play analysis and an ETL pipeline are presented in the jupyter notebook, together with a test notebook to confirm the validity of the database.
+In this project, an ETL pipeline is built using python to extracts data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for the analytics team.
 
 ## Table of contents
 
@@ -17,7 +17,7 @@ In this project, a relational database is created by using Postgres to analyze t
 A music streaming startup, Sparkify, has grown their user base and song database and want to move their processes and data onto the cloud. Their data resides in S3, in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
 
 ### Goal
-The goal of this project, as a data engineer, is to build an ETL pipeline that extracts the data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for the analytics team to continue finding insights in what songs their users are listening to. It is also expected to test the database and ETL pipeline by running queries given by the analytics team from Sparkify and compare the results with their expected results.
+The goal of this project, as a data engineer, is to build an ETL pipeline that extracts data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for the analytics team to continue finding insights in what songs their users are listening to. It is also expected to test the database and ETL pipeline by running queries given by the analytics team from Sparkify and compare the results with their expected results.
 
 ## Project Description
 * Build an ETL pipeline for a database hosted on Redshift based on the knowledge of data warehouses and AWS.
@@ -122,6 +122,4 @@ This project workspace includes four files:
 
 ### Notes
 
-1. Redshift cluster has been created and deleted.
-2. File dwh.cfg does not contain HOST and IAM Role for security reasons.
-3. Please let me know if you would like me to provide them.
+1. File dwh.cfg does not contain HOST and IAM Role for security reasons.
