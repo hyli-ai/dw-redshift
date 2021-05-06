@@ -85,9 +85,11 @@ This project workspace includes four files:
 
 2. `etl.py` is will load data from S3 into staging tables on Redshift and then process that data into the analytics tables on Redshift.
 
-5. `sql_queries.py` is where the SQL statements are defined, which will be imported into the two other files above.
+3. `sql_queries.py` is where the SQL statements are defined, which will be imported into the two other files above.
 
-6. `README.md` provide discussion on your process and decisions for this ETL pipeline.
+4. `dl.cfg` contains the AWS credentials.
+
+5. `README.md` provide discussion on your process and decisions for this ETL pipeline.
 
 ## Project Instructions
 
