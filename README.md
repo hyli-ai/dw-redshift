@@ -59,18 +59,6 @@ And below is an example of what the data in a log file, **2018-11-12-events.json
 
 ![Log-data image](/log-data.png)
 
-The JSON data within log_data files can be displayed by the creation of a pandas dataframe. JSON and pandas libraries need to be imported first.
-
-```python
-df = pd.read_json(filepath, lines=True)
-```
-
-For example,
-```python
-df = pd.read_json('data/log_data/2018/11/2018-11-01-events.json', lines=True)
-```
-would read the data file **2018-11-01-events.json**.
-
 ## Database and the Star Schema Design
 Using the song and log datasets, a star schema optimized for queries on song play analysis was created based on the following entity-relationship (ER) diagram:
 ![ER Diagram](/ERD.png)
