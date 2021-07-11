@@ -113,3 +113,103 @@ This project workspace includes four files:
 ### Notes
 
 1. File dwh.cfg does not contain HOST and IAM Role for security reasons.
+
+## Notes on Data Warehouses
+
+### Data Warehouses from a business perspective
+
+Let's take a closer look at details that may affect the data infrastructure. Maybe one single relational database won’t suffice.
+
+* Retailer has a nation-wide presence → **Scale?**
+
+* Acquired smaller retailers, brick & mortar shops, online store → **Single database? Complexity?**
+
+* Has support call center & social media accounts → **Tabular data?**
+
+* Customers, Inventory Staff and Delivery staff expect the system to be fast & stable → **Performance**
+
+* HR, Marketing & Sales Reports want a lot information but have not decided yet on everything they need → **Clear Requirements?**
+
+| OLTP / OLAP | Description |
+| --- | ----------- |
+| | 1. Find goods and make orders (For customers) |
+| Operational Process (Make it work) | 2. Stock and find goods (For inventory staff) |
+| | 3. Pick-up and delivery goods (Foe delivery staff) |
+| | |
+| | 1. Assess the performance (For HR) |
+| Analytical Process (What's going on?) | 2. See the effect of differenct sales channels (For marketing) |
+| | 3. Monitor sales growth (For management) |
+
+For a operational databases, it is good for:
+
+* Excellent for operations
+* No redundancy, high integrity
+
+but it is bad because:
+
+* Too slow for analytics, too many JOINs
+* Too hard to understand
+
+### Data Warehouses from a technical perspective
+
+* A data warehouse is a copy of transaction data specifically structured for query and analysis.
+
+* A data warehouse is a subject-oriented, integrated, non-volatile, and time-variant collection of data in support of management's decision.
+
+1. subject-oriented: there is no one-size-fits-all
+2. integrated: from many data sources
+3. non-volatile: non-transient, must be persistent
+4. time-variant: same question may have different answer tomorrow
+
+* A data warehouse is a system that retrieves and consolidates data periodically, from the source system into a dimensional or normalized data source. It usually keeps years of history and is queried for business intelligence or other analytical activities. It is typically updated in batches, not every time a transaction happens in the source system.
+
+DWH Model:
+
+Data In → ETL → Dimensional Model → Data Out
+
+1. ETL: Extract the data from the source systems used for operations, transform the data and load it into a dimensional model.
+2. Dimensional Model: Make it easy for business users to work with the data, and improve analytical query performance.
+3. Data Out: For business intelligence (BI) applications.
+
+### Data Warehouse Arhcitectures
+1. Kimball's Bus Architecture
+2. Independent Data Marts
+3. Inmon's Corporate Information Factory (CIF)
+4. Hybrid Kimball's Bus & Inmon's CIF
+
+### OLAP Cubes
+* An OLAP Cube is an aggregation of a fact metric on a number of dimensions.
+* It is easy to communicate to business users.
+* Common OLAP operations include: Roll-up, Drill-down, Slice, and Dice.
+
+For a table with Movie, Branch, and Month columns:
+1. Roll-up: Sum up the sales of each city by country. (less column in Branch dimension)
+2. Drill-down: Decompose the sales of each city into smaller districts. (more columns in Branch dimension)
+3. Slice: Reducing N dimensions to N-1 dimensions by restricting one dimension to a single value. (Ex. Month = 'Mar')
+4. Dice: Same dimensions but computing a sub-cube by restricting some of the values of the dimensions. (Ex. Month in ['FEB', 'MAR'], Movie in ['Avatar', 'Batman'], and Branch = 'NY')
+
+### OLAP Cube Query Optimization
+
+* Business users will typically want to slice, dice, roll-up, and drill-down all the time.
+* Each such combination will potentially go through all the Facts Table, which is sub-optimal.
+* The `GROUP BY CUBE (Movie, Branch, and Month)` will make one pass through the Facts Table and will aggregate **all possible combinations** of groupings of length 0, 1, 2, 3.
+1. Length 0: Total Revenue.
+2. Length 1: Revenue by Month, Revenue by Branch, Revenue by Movie.
+3. Length 2: Revenue by Month and Branch, Revenue by Movie and Branch, Revenue by Month and Movie.
+4. Length 3: Revenue by Month, Branch, and Movie.
+* Saving, Materializing the output of the CUBE operation and using it is usually enough to answer all forthcoming aggregations from business users without having to process the whole Facts Table again.
+
+### How Do We Serve these OLAP Cubes?
+* Approach 1: Pre-aggregate the OLAP Cubes and saves them in a special purpose non-relational database. (MOLAP)
+* Approach 2: Compute the OLAP Cubes on the fly from the existing relational databases where the dimensional model resides. (ROLAP)
+
+### Massively Parallel Processing (MPP) Databases
+* Most relational databases execute multiple queries in parallel if they have access to many cores/servers.
+* However, every query is always executed on a single CPU of a single machine.
+* This is acceptable for OLTP, since it has many concurrent users and each query is not very long. It mostly does updates and a few rows retrieval.
+* Massively Parallel Processing (MPP) databases parallelize the execution of one query on multiple CPUs/machines.
+* How? A table is partitioned and partitions are processed in parallel.
+* Amazon Redshift is a cloud-managed, column-based, MPP database.
+* Other examples include Teradata Aster, Oracle Exadata, and Azure SQL.
+
+
