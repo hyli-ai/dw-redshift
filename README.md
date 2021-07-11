@@ -24,6 +24,8 @@ The goal of this project, as a data engineer, is to build an ETL pipeline that e
 
 * Load data from S3 to staging tables on Redshift and execute SQL statements that create the analytics tables from these staging tables.
 
+* For this project, all of the data is already in the staging area, and the ETL process will be performed by running the `etl.py` scropt on an EC2 instance.
+
 ![Log-data image](/images/illustration.png)
 
 ## Dataset
@@ -155,13 +157,68 @@ This project workspace includes four files:
 
 6. Add redshift database and IAM role info to `dwh.cfg`.
 
+    The information provided includes the following:
+    ```python
+    [CLUSTER]
+    HOST=redshift-cluster-1.xxx.us-west-2.redshift.amazonaws.com
+    DB_NAME=devp1
+    DB_USER=awsuser-p1
+    DB_PASSWORD=awsuser-P123
+    DB_PORT=5439
+
+    [IAM_ROLE]
+    ARN='arn:aws:iam::000:role/s3_read_access'
+
+    [S3]
+    LOG_DATA='s3://udacity-dend/log_data'
+    LOG_JSONPATH='s3://udacity-dend/log_json_path.json'
+    SONG_DATA='s3://udacity-dend/song_data'
+    ```
+
 7. Test by running `create_tables.py` and checking the table schemas in the redshift database. Use Query Editor in the AWS Redshift console for this.
 
 ### Build ETL Pipeline
 
 1. Implement the logic in `etl.py` to load data from S3 to staging tables on Redshift.
 
+    ```python
+    def load_staging_tables(cur, conn):
+        for query in copy_table_queries:
+            cur.execute(query)
+            conn.commit()
+    ```
+
+    Use COPY command to move data from S3 to Redshift:
+    ```python
+    staging_songs_copy = ("""copy staging_songs 
+                          from {} 
+                          iam_role {}
+                          json 'auto';
+                      """).format(config.get('S3','SONG_DATA'), config.get('IAM_ROLE', 'ARN'))
+    ```
+
 2. Implement the logic in `etl.py` to load data from staging tables to analytics tables on Redshift.
+
+    ```python
+    def insert_tables(cur, conn):
+        for query in insert_table_queries:
+            cur.execute(query)
+            conn.commit()
+    ```
+
+    ```python
+    song_table_insert = ("""
+    INSERT INTO songs (song_id, title, artist_id, year, duration) 
+    SELECT DISTINCT 
+        song_id, 
+        title,
+        artist_id,
+        year,
+        duration
+    FROM staging_songs
+    WHERE song_id IS NOT NULL
+    """)
+    ```
 
 3. Test by running `etl.py` after running `create_tables.py` and running the analytic queries on your Redshift database to compare the results with the expected results.
 
