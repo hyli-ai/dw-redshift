@@ -24,6 +24,8 @@ The goal of this project, as a data engineer, is to build an ETL pipeline that e
 
 * Load data from S3 to staging tables on Redshift and execute SQL statements that create the analytics tables from these staging tables.
 
+![Log-data image](/images/illustration.png)
+
 ## Dataset
 Two sets of data are presented: the **Song Dataset** and the **Log Dataset**. These datasets reside in S3, and here are the S3 links for each:
 
@@ -57,11 +59,11 @@ log_data/2018/11/2018-11-13-events.json
 
 And below is an example of what the data in a log file, **2018-11-12-events.json**, looks like.
 
-![Log-data image](/log-data.png)
+![Log-data image](/images/log-data.png)
 
 ## Database and the Star Schema Design
 Using the song and log datasets, a star schema optimized for queries on song play analysis was created based on the following entity-relationship (ER) diagram:
-![ER Diagram](/ERD.png)
+![ER Diagram](/images/ERD.png)
 
 This includes the following tables:
 ### Fact Table
@@ -96,23 +98,78 @@ This project workspace includes four files:
 ### Create Table Schema
 
 1. Design schemas for the fact and dimension tables (described as above).
+
 2. Write a SQL `CREATE` statement for each of these tables in `sql_queries.py`.
+
+    Here is an example of one of the table creation:
+    ```SQL
+    staging_songs_table_create = ("""
+    CREATE TABLE staging_songs(
+        song_id VARCHAR(100),
+        num_songs INTEGER,
+        artist_id VARCHAR(100),
+        artist_latitude DOUBLE PRECISION,
+        artist_longitude DOUBLE PRECISION,
+        artist_location VARCHAR(255),
+        artist_name VARCHAR(255),
+        title VARCHAR(255),
+        duration DOUBLE PRECISION,
+        year INTEGER,
+        PRIMARY KEY (song_id))
+    """)
+    ```
+
+    Also, there are a few lists at the end of `sql_queries.py` which will be imported by `create_tables.py`. Here is one of the list:
+    ```python
+    create_table_queries = [staging_events_table_create, staging_songs_table_create, songplay_table_create, user_table_create, song_table_create, artist_table_create, time_table_create]
+    ```
+
 3. Complete the logic in `create_tables.py` to connect to the database and create these tables.
+
+    `create_tables.py` will first import necessary modules, including functions from `sql_queries.py`:
+    ```python
+    import configparser
+    import psycopg2
+    from sql_queries import create_table_queries, drop_table_queries
+    ```
+
+    And here is one of the functions imported and later executed:
+    ```python
+    def create_tables(cur, conn):
+        for query in create_table_queries:
+            cur.execute(query)
+            conn.commit()
+    ```
+
 4. Write SQL `DROP` statements to drop tables in the beginning of `create_tables.py` if the tables already exist. This way, one can run `create_tables.py` whenever he/she wants to reset the database and test the ETL pipeline.
+
+    Here is what it would look like:
+    ```python
+    def drop_tables(cur, conn):
+        for query in drop_table_queries:
+            cur.execute(query)
+            conn.commit()
+    ```
+
 5. Launch a redshift cluster and create an IAM role that has read access to S3.
+
 6. Add redshift database and IAM role info to `dwh.cfg`.
+
 7. Test by running `create_tables.py` and checking the table schemas in the redshift database. Use Query Editor in the AWS Redshift console for this.
 
 ### Build ETL Pipeline
 
 1. Implement the logic in `etl.py` to load data from S3 to staging tables on Redshift.
+
 2. Implement the logic in `etl.py` to load data from staging tables to analytics tables on Redshift.
+
 3. Test by running `etl.py` after running `create_tables.py` and running the analytic queries on your Redshift database to compare the results with the expected results.
+
 4. Delete the redshift cluster when finished.
 
 ### Notes
 
-1. File dwh.cfg does not contain HOST and IAM Role for security reasons.
+1. File dwh.cfg does not contain real HOST and IAM Role information for security reasons.
 
 ## Notes on Data Warehouses
 
